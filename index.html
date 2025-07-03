@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Part Pace Tracker</title>
+  <style>
+$1
+
+    /* Touch-friendly styles */
+    input, button {
+      font-size: 2rem;
+      padding: 20px;
+      min-width: 200px;
+      touch-action: manipulation;
+    }
+
+    /* Confetti canvas */
+    #confettiCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 999;
+    }
+</style>
+</head>
+<body>
+  <div id="setupScreen" class="screen active">
+    <h1>Set Up</h1>
+    <label>
+      Cycle time per part (seconds):<br/>
+      <input id="timePerCycle" type="number" min="1" />
+    </label>
+    <label>
+      Number of cycles to be completed:<br/>
+      <input id="totalCycles" type="number" min="1" />
+    </label>
+    <button onclick="startTracker(true)">Start</button>
+  </div>
+
+  <div id="trackerScreen" class="screen">
+    <h1 id="elapsed">00:00</h1>
+    <div class="sub">
+      Expected Cycles: <span id="expectedCycles">0</span>
+    </div>
+    <div class="controls">
+      <button onclick="startTracker(false)">Start</button>
+      <button onclick="stopTracker()">Stop</button>
+      <button onclick="resetTracker()">Reset</button>
+    </div>
+  </div>
+
+  <script>
+    let timePerCycle = 0;
+    let totalCycles = 0;
+    let startTime = null;
+    let elapsedBeforePause = 0;
+    let timerInterval = null;
+
+    function startTracker(isInitial) {
+      const startButton = document.querySelector('#trackerScreen .controls button[onclick*="startTracker"]');
+      startButton.disabled = true;
+
+      if (isInitial) {
+        timePerCycle = parseFloat(document.getElementById("timePerCycle").value);
+        totalCycles = parseInt(document.getElementById("totalCycles").value);
+
+        if (!timePerCycle || !totalCycles) {
+          alert("Please enter valid numbers for both fields.");
+          startButton.disabled = false;
+          return;
+        }
+
+        document.getElementById("setupScreen").classList.remove("active");
+        document.getElementById("trackerScreen").classList.add("active");
+
+        startTime = Date.now();
+        elapsedBeforePause = 0;
+      } else {
+        startTime = Date.now() - elapsedBeforePause;
+      }
+
+      updateTimer();
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    function updateTimer() {
+      const now = Date.now();
+      const elapsedSeconds = Math.floor((now - startTime) / 1000);
+      elapsedBeforePause = now - startTime;
+
+      const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
+      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
+      document.getElementById("elapsed").innerText = `${minutes}:${seconds}`;
+
+      const expected = Math.floor(elapsedSeconds / timePerCycle);
+      document.getElementById("expectedCycles").innerText = expected;
+    }
+
+    function stopTracker() {
+      clearInterval(timerInterval);
+      const startButton = document.querySelector('#trackerScreen .controls button[onclick*="startTracker"]');
+      startButton.disabled = false;
+    }
+
+    function resetTracker() {
+      clearInterval(timerInterval);
+      elapsedBeforePause = 0;
+      document.getElementById("trackerScreen").classList.remove("active");
+      document.getElementById("setupScreen").classList.add("active");
+      document.getElementById("elapsed").innerText = "00:00";
+      document.getElementById("expectedCycles").innerText = "0";
+      const startButton = document.querySelector('#trackerScreen .controls button[onclick*="startTracker"]');
+      startButton.disabled = false;
+    }
+        if (expected >= totalCycles) {
+        clearInterval(timerInterval);
+        showConfetti();
+      }
+    }
+
+    function showConfetti() {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const pieces = Array.from({ length: 100 }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * -canvas.height,
+        r: Math.random() * 6 + 4,
+        c: `hsl(${Math.random() * 360}, 100%, 50%)`,
+        s: Math.random() * 5 + 2
+      }));
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (const p of pieces) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI);
+          ctx.fillStyle = p.c;
+          ctx.fill();
+          p.y += p.s;
+          if (p.y > canvas.height) p.y = -10;
+        }
+        requestAnimationFrame(draw);
+      }
+      draw();
+    }
+  </script>
+<canvas id="confettiCanvas"></canvas>
+</body>
+</html>
