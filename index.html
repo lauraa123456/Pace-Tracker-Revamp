@@ -87,17 +87,19 @@ $1
       timerInterval = setInterval(updateTimer, 1000);
     }
 
-    function updateTimer() {
-      const now = Date.now();
-      const elapsedSeconds = Math.floor((now - startTime) / 1000);
-      elapsedBeforePause = now - startTime;
-
-      const minutes = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
-      const seconds = String(elapsedSeconds % 60).padStart(2, '0');
-      document.getElementById("elapsed").innerText = `${minutes}:${seconds}`;
-
-      const expected = Math.floor(elapsedSeconds / timePerCycle);
-      document.getElementById("expectedCycles").innerText = expected;
+    function updateTimer() {$1document.getElementById("expectedCycles").innerText = expected;
+      if (expected >= totalCycles) {
+        clearInterval(timerInterval);
+        showConfetti();
+        setTimeout(() => {
+          document.getElementById("trackerScreen").classList.remove("active");
+          document.getElementById("setupScreen").classList.add("active");
+          document.getElementById("elapsed").innerText = "00:00";
+          document.getElementById("expectedCycles").innerText = "0";
+          const startButton = document.querySelector('#trackerScreen .controls button[onclick*="startTracker"]');
+          startButton.disabled = false;
+        }, 5000);
+      }
     }
 
     function stopTracker() {
@@ -123,34 +125,13 @@ $1
     }
 
     function showConfetti() {
-      const canvas = document.getElementById('confettiCanvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-
-      const pieces = Array.from({ length: 100 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * -canvas.height,
-        r: Math.random() * 6 + 4,
-        c: `hsl(${Math.random() * 360}, 100%, 50%)`,
-        s: Math.random() * 5 + 2
-      }));
-
-      function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        for (const p of pieces) {
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, 2 * Math.PI);
-          ctx.fillStyle = p.c;
-          ctx.fill();
-          p.y += p.s;
-          if (p.y > canvas.height) p.y = -10;
-        }
-        requestAnimationFrame(draw);
-      }
-      draw();
-    }
+  const flame = document.getElementById("flameEffect");
+  flame.style.display = "block";
+  setTimeout(() => {
+    flame.style.display = "none";
+  }, 5000);
+}
   </script>
-<canvas id="confettiCanvas"></canvas>
+<img id="flameEffect" src="https://media.giphy.com/media/l0MYt5jPR6QX5pnqM/giphy.gif" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; object-fit: cover; pointer-events: none; z-index: 999; display: none;" alt="Flames" />
 </body>
 </html>
